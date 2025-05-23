@@ -30,6 +30,8 @@ app.use("/public", express.static(process.cwd() + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const hash = bcrypt.hashSync(req.body.password, 12);
+
 myDB(async (client) => {
   const myDataBase = await client.db("database").collection("users");
 
@@ -71,14 +73,12 @@ myDB(async (client) => {
           myDataBase.insertOne(
             {
               username: req.body.username,
-              password: req.body.password,
+              password: hash,
             },
             (err, doc) => {
               if (err) {
                 res.redirect("/");
               } else {
-                // The inserted document is held within
-                // the ops property of the doc
                 next(null, doc.ops[0]);
               }
             }
@@ -106,7 +106,7 @@ myDB(async (client) => {
         if (!user) {
           return done(null, false);
         }
-        if (password !== user.password) {
+        if (!bcrypt.compareSync(password, user.password)) {
           return done(null, false);
         }
         return done(null, user);
