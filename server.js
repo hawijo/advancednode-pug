@@ -31,7 +31,7 @@ app.use("/public", express.static(process.cwd() + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const hash = bcrypt.hashSync(req.body.password, 12);
+
 
 myDB(async (client) => {
   const myDataBase = await client.db("database").collection("users");
@@ -50,6 +50,7 @@ myDB(async (client) => {
     .post(
       passport.authenticate("local", { failureRedirect: "/" }),
       (req, res) => {
+        const hash = bcrypt.hashSync(req.body.password, 12);
         res.redirect("/profile");
       }
     );
